@@ -16,32 +16,39 @@ const Votes = ({ address }) => {
     fetchData()
   }, []);
 
-  const sendUpdate = async (option) => {
-    const poolsSnapshot = await getPool()
-
-    if (poolsSnapshot.addressesVoted.includes(address)) {
-      setShowModal(true);
-      return;
-    }
-
-    const newAddressesVoted = poolsSnapshot.addressesVoted.concat(address);
-
-    const newVotes = [...poolsSnapshot.votes];
-    newVotes[option]++;
-
-
-    await updatePool({
-      totalVotes: poolsSnapshot.totalVotes + 1,
-      addressesVoted: newAddressesVoted,
-      votes: newVotes
-    });
-    window.location.reload();
-  }
+  const hasVoted = () => {
+    return pool.addressesVoted.includes(address);
+  };
 
 
   const handleCloseModal = () => {
     setShowModal(false);
   };
+
+  const handleVoteClick = async (optionIndex) => {
+    if (hasVoted()) {
+      setShowModal(true);
+      return;
+    }
+
+    const updatedVotes = [...pool.votes];
+    updatedVotes[optionIndex]++;
+
+    const updatedAddressesVoted = [...pool.addressesVoted, address];
+
+    try {
+      await updatePool({
+        totalVotes: pool.totalVotes + 1,
+        addressesVoted: updatedAddressesVoted,
+        votes: updatedVotes
+      });
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to update pool:", error);
+    }
+  };
+
+
 
   return (
     <div>
@@ -63,7 +70,7 @@ const Votes = ({ address }) => {
                 <Button
                   size="sm"
                   onClick={() => {
-                    sendUpdate(idx);
+                    handleVoteClick(idx);
                   }}
                   variant="dark"
                 >
