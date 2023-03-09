@@ -7,6 +7,8 @@ import { getPool, updatePool } from "./firebase";
 const Votes = ({ address }) => {
   const [pool, setPool] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [alreadyVoted, setAlreadyVoted] = useState(false);
+  const [modalText, setModalText] = useState("");
 
   useEffect(() => {
     async function fetchData() {
@@ -28,6 +30,7 @@ const Votes = ({ address }) => {
   const handleVoteClick = async (optionIndex) => {
     if (hasVoted()) {
       setShowModal(true);
+      setModalText('Você já votou nesta pesquisa, muito obrigado :)')
       return;
     }
 
@@ -42,7 +45,9 @@ const Votes = ({ address }) => {
         addressesVoted: updatedAddressesVoted,
         votes: updatedVotes
       });
-      window.location.reload();
+      setShowModal(true);
+      setAlreadyVoted(true);
+      setModalText('Seu voto foi computado :)')
     } catch (error) {
       console.error("Failed to update pool:", error);
     }
@@ -73,6 +78,7 @@ const Votes = ({ address }) => {
                     handleVoteClick(idx);
                   }}
                   variant="dark"
+                  disabled={alreadyVoted}
                 >
                   Votar
                 </Button>
@@ -83,9 +89,9 @@ const Votes = ({ address }) => {
       </Card>
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Olá, tudo bem?</Modal.Title>
+          <Modal.Title>Olá,</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Você já votou nesta pesquisa, muito obrigado :)</Modal.Body>
+        <Modal.Body>{modalText}</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
             Fechar
